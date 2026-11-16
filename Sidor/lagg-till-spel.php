@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/../includes/functions.php';
@@ -11,12 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($gameName === '') {
         $message = "Du måste skriva ett spelnamn.";
-
     } else {
         try {
             LäggSpel($gameName);
             $message = "Spelet har lagts till i databasen!";
-
         } catch (PDOException $e) {
             error_log($e->getMessage());
             $message = "Det gick inte att lägga till spelet.";
@@ -50,8 +47,7 @@ $games = HämtaSpel();
             id="game_name"
             name="game_name"
             maxlength="255"
-            required
-        >
+            required>
 
         <button type="submit">Lägg till spel</button>
 
@@ -72,4 +68,5 @@ $games = HämtaSpel();
     <?php endwhile; ?>
 
 </body>
+
 </html>
