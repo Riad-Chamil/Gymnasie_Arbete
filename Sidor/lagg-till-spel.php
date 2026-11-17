@@ -1,24 +1,39 @@
 <?php
 
+session_start();
+
 require_once __DIR__ . '/../includes/functions.php';
 
-$message = "";
+$message = $_SESSION['message'] ?? '';
+unset($_SESSION['message']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $gameName = trim($_POST['game_name'] ?? '');
+    $releaseDate = $_POST['release_date'] ?? '';
+    $storageSize = $_POST['storage_size'] ?? '';
 
-    if ($gameName === '') {
-        $message = "Du måste skriva ett spelnamn.";
+    if ($gameName === '' || $releaseDate === '' || $storageSize === '') {
+
+        $_SESSION['message'] = "Du måste fylla i alla fält.";
     } else {
+
         try {
-            LäggSpel($gameName);
-            $message = "Spelet har lagts till i databasen!";
+
+            if (LäggSpel($gameName, $releaseDate, $storageSize)) {
+                $_SESSION['message'] = "Spelet har lagts till i databasen!";
+            } else {
+                $_SESSION['message'] = "Det gick inte att lägga till spelet.";
+            }
         } catch (PDOException $e) {
+
             error_log($e->getMessage());
-            $message = "Det gick inte att lägga till spelet.";
+            $_SESSION['message'] = "Ett databasfel uppstod.";
         }
     }
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 }
 
 $games = HämtaSpel();
@@ -49,6 +64,29 @@ $games = HämtaSpel();
             maxlength="255"
             required>
 
+        <br><br>
+
+        <label for="release_date">Utgivningsdatum:</label>
+
+        <input
+            type="date"
+            id="release_date"
+            name="release_date"
+            required>
+
+        <br><br>
+
+        <label for="storage_size">Lagringsstorlek (GB):</label>
+        <input
+            type="number"
+            id="storage_size"
+            name="storage_size"
+            step="0.01"
+            required>
+
+        <br><br>
+
+
         <button type="submit">Lägg till spel</button>
 
     </form>
@@ -63,6 +101,10 @@ $games = HämtaSpel();
 
         <p>
             <?php echo htmlspecialchars($game['Spel_Namn'], ENT_QUOTES, 'UTF-8'); ?>
+            -
+            <?php echo htmlspecialchars($game['Utgivningsdatum'], ENT_QUOTES, 'UTF-8'); ?>
+            -
+            <?php echo htmlspecialchars($game['LagringStorlek'], ENT_QUOTES, 'UTF-8'); ?> GB
         </p>
 
     <?php endwhile; ?>

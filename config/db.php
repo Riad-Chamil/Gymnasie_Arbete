@@ -1,5 +1,5 @@
-
 <?php
+
 $hostname_forumtest = "localhost";
 $database_forumtest = "databasga";
 $username_forumtest = "forum";
@@ -16,6 +16,5 @@ try {
     $forum->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    error_log($e->getMessage());
-    die("Kunde inte ansluta till databasen.");
+    die("Databasfel: " . htmlspecialchars($e->getMessage()));
 }
