@@ -7,20 +7,30 @@ require_once __DIR__ . '/../includes/functions.php';
 $message = $_SESSION['message'] ?? '';
 unset($_SESSION['message']);
 
+$allowedUnits = ['B', 'KB', 'MB', 'GB', 'TB'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $gameName = trim($_POST['game_name'] ?? '');
     $releaseDate = $_POST['release_date'] ?? '';
     $storageSize = $_POST['storage_size'] ?? '';
+    $storageUnit = $_POST['storage_unit'] ?? '';
 
-    if ($gameName === '' || $releaseDate === '' || $storageSize === '') {
+    if (
+        $gameName === '' ||
+        $releaseDate === '' ||
+        $storageSize === '' ||
+        !is_numeric($storageSize) ||
+        $storageSize < 0 ||
+        !in_array($storageUnit, $allowedUnits, true)
+    ) {
 
-        $_SESSION['message'] = "Du måste fylla i alla fält.";
+        $_SESSION['message'] = "Fyll i alla fält korrekt.";
     } else {
 
         try {
 
-            if (LäggSpel($gameName, $releaseDate, $storageSize)) {
+            if (LäggSpel($gameName, $releaseDate, $storageSize, $storageUnit)) {
                 $_SESSION['message'] = "Spelet har lagts till i databasen!";
             } else {
                 $_SESSION['message'] = "Det gick inte att lägga till spelet.";
@@ -76,13 +86,22 @@ $games = HämtaSpel();
 
         <br><br>
 
-        <label for="storage_size">Lagringsstorlek (GB):</label>
+        <label for="storage_size">Lagringsstorlek:</label>
         <input
             type="number"
             id="storage_size"
             name="storage_size"
-            step="0.01"
+            min="0"
+            step="0.1"
             required>
+
+        <select name="storage_unit" id="storage_unit" required>
+            <option value="B">Byte (B)</option>
+            <option value="KB">Kilobyte (KB)</option>
+            <option value="MB">Megabyte (MB)</option>
+            <option value="GB" selected>Gigabyte (GB)</option>
+            <option value="TB">Terabyte (TB)</option>
+        </select>
 
         <br><br>
 
@@ -104,7 +123,8 @@ $games = HämtaSpel();
             -
             <?php echo htmlspecialchars($game['Utgivningsdatum'], ENT_QUOTES, 'UTF-8'); ?>
             -
-            <?php echo htmlspecialchars($game['LagringStorlek'], ENT_QUOTES, 'UTF-8'); ?> GB
+            <?php echo htmlspecialchars($game['LagringStorlek'], ENT_QUOTES, 'UTF-8'); ?>
+            <?php echo htmlspecialchars($game['LagringsEnhet'], ENT_QUOTES, 'UTF-8'); ?>
         </p>
 
     <?php endwhile; ?>
